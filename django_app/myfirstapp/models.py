@@ -48,9 +48,6 @@ class Counterparty (models.Model):
         verbose_name = 'Контрагенты'
         verbose_name_plural = verbose_name
         
-    
-    
-
 
 class ConversionRate(models.Model):
     '''    
