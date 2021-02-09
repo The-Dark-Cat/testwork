@@ -1,5 +1,8 @@
 from django.db import models
 
+from django.db.models import Avg
+import datetime
+
 # Create your models here.
 
 class UOM(models.Model):
@@ -130,10 +133,22 @@ class ProductionConsumed(models.Model):
     consumed = models.ForeignKey(Nomenclature, on_delete=models.PROTECT)
     consumed_uom = models.ForeignKey(UOM, on_delete=models.PROTECT)
     quantity = models.DecimalField(max_digits=10, decimal_places=3)
-    
+
+
     def __str__(self):
         return f"{self.prod_report} - {self.consumed} - {self.quantity}"
-    
+
+    @property
+    def price(self):
+        price = Purchase.objects.filter(
+            material=self.consumed, purch_date__gte=self.prod_report.prod_date - datetime.timedelta(days=30)
+        ).exclude(
+            purch_date__gte=self.prod_report.prod_date
+        ).aggregate(
+            average_price=Avg('price_ex_vat')
+        )
+        return price['average_price']
+
     class Meta:
         verbose_name = "Списанные материалы"
         verbose_name_plural = verbose_name
